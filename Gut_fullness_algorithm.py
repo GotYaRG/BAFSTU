@@ -11,8 +11,7 @@ import pickle
 
 def validation_input_to_binary(img):
     """
-    A simple function that converts annotated images made
-    in photoshop to boolean type binary images.
+    Converts annotated images made in photoshop to boolean type binary images.
     :param img: An annotated png image.
     :return: A binary image based on the input image.
     """
@@ -29,9 +28,8 @@ def validation_input_to_binary(img):
 
 def stretch_contrast(img):
     """
-    A function that increases the contrast in an image by
-    rescaling the intensity of the image based on the
-    bottom and top 2% (in terms of intensity) of pixels.
+    Increases the contrast in an image by rescaling the intensity of the image
+    based on the bottom and top 2% (in terms of intensity) of pixels.
     :param img: An rgb image.
     :return: An rgb image with increased contrast.
     """
@@ -41,8 +39,7 @@ def stretch_contrast(img):
 
 def dilater(object_to_dilate, rounds):
     """
-    A function that takes an image and repeatedly dilates
-    it, as many times as the user desires.
+    Takes an image and repeatedly dilates it, as many times as the user desires.
     :param object_to_dilate: The image that needs to be dilated.
     :param rounds: The amount of additional times the image
                    needs to be dilated.
@@ -82,9 +79,8 @@ def check_borders(img):
 
 def remove_border_pixels(edge):
     """
-    A specific function that removes the pixels of a binary
-    image that are on the very border of the image. Meant to
-    be applied to edges found by an edge dectection tool.
+    Removes the pixels of a binary image that are on the very border of the image.
+    Meant to be applied to edges found by an edge detection tool.
     :param edge: The edge who's border pixels need removing.
     :return: The edge with its border pixels removed.
     """
@@ -114,12 +110,14 @@ def add_binary_pixels(img):
 
 def add_black_pixels(img):
     """
-    In order to obtain the contents of a Noctiluca we make use of "Trainable Segmentation" with a
-    Random Forest classifier. This classifier can only be trained on a single image, but we wanted to train it
-    on more than one image. In order to get around this, we can stitch multiple images onto eachother into one
-    large image. However, for this to work, all images need to have either the same width or length. This function
-    makes sure of exactly that, by extending the width of each image passed to it to 196 pixels, which is the width
-    of the widest image in the training set.
+    In order to obtain the contents of a Noctiluca we make use of
+    "Trainable Segmentation" with a Random Forest classifier. This classifier
+    can only be trained on a single image, but we wanted to train it on more than
+    one image. In order to get around this, we can stitch multiple images onto
+    eachother into one large image. However, for this to work, all images need to
+    have either the same width or length. This function makes sure of exactly that,
+    by extending the width of each image passed to it to 196 pixels, which is
+    the width of the widest image in the training set.
     :param img: An image that might need to be widened.
     :return: An image that has a width of 196 pixels.
     """
@@ -131,13 +129,12 @@ def add_black_pixels(img):
 
 def circle_finder(img):
     """
-    A function that receives an image and is tasked with finding a circle of
-    a particular size within that image. The size range of the circle is
-    determined by the largest object that can be found in the image. The circle
-    itself is calculated by running an edge detector on the image and feeding
-    the resulting edges into a 'hough transform' function, together with the
-    size range for the circle. The starting coordinates and radius of the best
-    circle are returned.
+    Receives an image and is tasked with finding a circle of a particular size
+    within that image. The size range of the circle is determined by the largest
+    object that can be found in the image. The circle itself is calculated by
+    running an edge detector on the image and feeding the resulting edges into a
+    'hough transform' function, together with the size range for the circle.
+    The starting coordinates and radius of the best circle are returned.
     :param img: An image in which a circle has to be found.
     :return: The starting coordinates and radius of a circle.
     """
@@ -158,16 +155,14 @@ def circle_finder(img):
 
 def fill_partials(img):
     """
-    A function that attempts to fill the surface of a Noctiluca
-    individual that isn't entirely visible in the image. Usually, when
-    there is a 'hole' in a collection of pixels, the Binary Fill function
-    from scikit can fill the hole. However, when this hole is on the border
-    of an image, it's not entirely enclosed by pixels. This causes the
-    Binary Fill function to fill. Flood Fill from skImage will still work,
-    however you need the right coordinates for where to start filling. This
-    function does exactly that, by approximating the shape in a circle,
-    then using a smaller circle as a reference for Flood Fill.
-
+    Attempts to fill the surface of a Noctiluca individual that isn't entirely
+    visible in the image. Usually, when there is a 'hole' in a collection of
+    pixels, the Binary Fill function from scikit can fill the hole. However, when
+    this hole is on the border of an image, it's not entirely enclosed by pixels.
+    This causes the Binary Fill function to fill. Flood Fill from skImage will still
+    work, however you need the right coordinates for where to start filling. This
+    function does exactly that, by approximating the shape in a circle, then using
+    a smaller circle as a reference for Flood Fill.
     :param img: A binary image with a convex shape that has holes in it.
     :return: The same binary image, with its holes filled in.
     """
@@ -218,14 +213,16 @@ def fill_partials(img):
 
 def remove_surface_junk(surface):
     """
-    A function that attempts to cut off some of the artifacts that can
-    show up on the images. From time to time an object will overlap with
-    an individual and stick out, to more accurately calculate the surface
-    of an individual, the part that sticks out would need to be removed.
-    The problem is that it's hard to do so while not removing any of the
-    actual surface. This function attempts to do so using hough transform.
-    :param surface:
-    :return:
+    Attempts to cut off some of the artifacts that can show up on the images.
+    From time to time an object will overlap with an individual and stick out,
+    to more accurately calculate the surface of an individual, the part that
+    sticks out would need to be removed. The problem is that it's hard to do so
+    while not removing any of the actual surface. This function attempts to do
+    so using hough transform.
+    :param surface: The (suspected) surface of an N. scintillans individual, which
+                    should have an artefact overlapping with the surface.
+    :return: The (suspected) surface of an N. scintillans individual, with at
+             least a portion of the overlapping artefact removed.
     """
 
     # First, Convex Hull is used to see if there is something that sticks
@@ -269,7 +266,7 @@ def remove_surface_junk(surface):
 
 def surface_and_outline(img):
     """
-    A function that takes an image of N. scintillans and attempts
+    Takes an image of N. scintillans and attempts
     to determine the "surface" and outline of the organism.
 
     :param img: an RGB image of an N. scintillans individual.
@@ -332,7 +329,7 @@ def surface_and_outline(img):
 
 def get_trained_segmentation_images():
     """
-    A function that imports all the images required for the training of the Random Forest classifier,
+    Imports all the images required for the training of the Random Forest classifier,
     which is used to segement the Noctiluca images.
     :return: A dictionary of labeled images, each linked to a reference image by filename.
     """
