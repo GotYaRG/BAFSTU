@@ -1,5 +1,8 @@
+from random import randint
+
 import numpy as np
 import pandas as pd
+import skimage.io
 from skimage import io, segmentation, feature, future, morphology, color, \
                     measure, filters, exposure, transform, draw
 from sklearn.ensemble import RandomForestClassifier
@@ -237,7 +240,10 @@ def remove_surface_junk(surface):
                 surface_c += 1
             if p2:
                 hull_c += 1
-    increase = 100 - (surface_c / hull_c * 100)
+    try:
+        increase = 100 - (surface_c / hull_c * 100)
+    except ZeroDivisionError:
+        increase = 0
 
     # If there is an increase in pixels of more than 7.5% in the convex hull
     # it is assumed that there is an artifact of some kind sticking out
@@ -273,18 +279,18 @@ def surface_and_outline(img):
     :return: The surface and dilated outline of the individual.
     """
     # First the contrast is increased, to make it easier to
-    # seperate the background from the individual.
+    # separate the background from the individual.
     contrast_img = stretch_contrast(img)
 
-    # Next the image is "thresholded" to perform the actual
-    # seperation of background and foreground.
+    # Next, a threshold is applied to the image to perform the actual
+    # separation of background and foreground.
     gray_img = color.rgb2gray(contrast_img)
     threshold = filters.threshold_triangle(gray_img)
     th_img = gray_img > threshold
 
     # Sometimes, an image can be somewhat overexposed. Still
     # increasing the contrast on such an image would result
-    # in most of the foreground being caught in the treshold.
+    # in most of the foreground being caught in the threshold.
     # This is checked by the following If statement, which, if
     # triggered, thresholds the image once more without
     # increasing the contrast beforehand.
@@ -310,7 +316,7 @@ def surface_and_outline(img):
     big = morphology.remove_small_objects(filled_th_img, min_size=size - 2000)
 
     # From time to time, a piece of detritus or some other object overlaps
-    # with an individual, which is then often thresholded with the rest of
+    # with an individual, which is then often in the threshold with the rest of
     # the foreground. This usually results in an object sticking out of the
     # surface, making it seem bigger than it actually is. To somewhat
     # alleviate this, the function below tests how round the individual is
@@ -330,7 +336,7 @@ def surface_and_outline(img):
 def get_trained_segmentation_images():
     """
     Imports all the images required for the training of the Random Forest classifier,
-    which is used to segement the Noctiluca images.
+    which is used to segment the Noctiluca images.
     :return: A dictionary of labeled images, each linked to a reference image by filename.
     """
     img_dict = {}
@@ -350,7 +356,7 @@ def get_trained_segmentation_images():
 def stitch_labels_and_train_predictor(img_dict):
     """
     In order to obtain the contents of a Noctiluca we make use of "Trainable Segmentation" with a
-    Random Forest classifier. This function recieves a dictionary of images that each contain a different type
+    Random Forest classifier. This function receives a dictionary of images that each contain a different type
     of pixel, namely Background, Food, Nucleus or Membrane pixels. These pixel type images are merged into one
     template that is linked to a reference RGB image that contains the original image. The pixel type templates
     and original images are fed to the Random Forest classifier, in order to train it on which pixel in the
@@ -421,7 +427,7 @@ def isolate_contents(img, outline, surface):
     For one, we are really only interested in the pixels which are deemed "Food". But from time to time, the
     classifier thinks a piece of food is actually a nucleus, which can happen due to a number of circumstances.
     This can result in multiple nuclei being found, when there is (almost) never more than one. This function
-    seperates the "Food" pixels from the rest and attempts to isolate a single nucleus, reverting other nucleus
+    separates the "Food" pixels from the rest and attempts to isolate a single nucleus, reverting other nucleus
     pixels back to food pixels.
     :param img: An image which has been segmented into four different types of pixels.
     :param outline: The outline of the object in the image, drastically dilated.
@@ -472,7 +478,7 @@ def load_usable_images():
              can calculate the gut fullness.
     """
     # A good input location still needs to be set
-    in_file = open("Data/NN_output/prediction.pickle", "rb")
+    in_file = open("Data/NN_output/predicted_labels_run_2.pickle", "rb")
     new_df = pickle.load(in_file)
     in_file.close()
     is_digesting = new_df["label"] == "digesting"
@@ -493,19 +499,135 @@ def export_gut_fullness_percentages(gut_fullness_percentages, usable_images):
     out_df["image_name"] = usable_images
     out_df["gut fullness"] = gut_fullness_percentages
     # A good output location still needs to be set
-    pd.to_pickle(out_df, "Data/gut_fullness_output/gut_fullness_percentages.pickle")
+    pd.to_pickle(out_df, "Data/gut_fullness_output/gut_fullness_percentages_run_2.pickle")
+
+
+def generate_randoms():
+    randints = set()
+    while len(randints) < 250:
+        randints.add(randint(0, 60000))
+    return randints
+
+
+def load_northsea_images():
+    in_file = open("Data/NN_output/NortSea_Images_run1.pickle", "rb")
+    new_df = pickle.load(in_file)
+    in_file.close()
+    is_digesting = new_df["label"] == "digesting"
+    digesting_df = new_df[is_digesting]
+    new_paths = []
+    for old_path in digesting_df["image_path"]:
+        old_path = old_path.split("/")
+        new_paths.append(f"D:/northsea_images/20220628_20220630_Pelagia_NorthSea/rois/{old_path[8]}/{old_path[9]}")
+        #new_paths.append(f"Data/northsea_images/20220628_20220630_Pelagia_NorthSea/rois/{old_path[8]}/{old_path[9]}")
+    digesting_df["image_path"] = new_paths
+    return digesting_df
+
+
+def simple_converter(img):
+    img = img.astype(int)
+    new_array = []
+    for y in img:
+        y_l = []
+        for x in y:
+            if x == 1:
+                y_l.append([255, 255, 255])
+            elif x == 0:
+                y_l.append([0, 0, 0])
+        new_array.append(y_l)
+    return_array = np.array(new_array)
+    return return_array
+
+
+def simple_saver(run_name, image_names, gut_fullnesses):
+    out_df = pd.DataFrame()
+    out_df["image_name"] = image_names
+    out_df["gut fullness"] = gut_fullnesses
+    # A good output location still needs to be set
+    pd.to_pickle(out_df, f"Data/gut_fullness_output/{run_name}.pickle")
+
+
+def simple_loader(run_name):
+    try:
+        in_file = open(f"Data/gut_fullness_output/{run_name}.pickle", "rb")
+        new_df = pickle.load(in_file)
+        in_file.close()
+        image_names = list(new_df["image_name"])
+        gut_fullnesses = list(new_df["gut fullness"])
+    except FileNotFoundError:
+        print(f"There was no file named {run_name}.pickle to be loaded.")
+        image_names, gut_fullnesses = [], []
+    return image_names, gut_fullnesses
 
 
 def main():
+    run_name = "Scharendijke_run_3"
+    save_images = False
+
+    if save_images:
+        images_bin, image_names_bin, fullness_bin = [], [], []
+
+    # Attempt loading from last saved file, if none, start empty
+    gut_fullness_percentages, image_names = simple_loader(run_name)
+
     # Load images the algorithm can use
     usable_images = load_usable_images()
+    #usable_images = load_northsea_images()
 
     # Load images for the Random Forest Classifier and train the predictor
     trained_segmentation_images = get_trained_segmentation_images()
     predictor = stitch_labels_and_train_predictor(trained_segmentation_images)
 
-    gut_fullness_percentages, usable_images_list = [], []
 
+
+    # Start a counter to keep track of image numbers
+    c = len(image_names)
+    if c == 0:
+        c += 1
+
+    # Loop through all usable images
+    #for img_name, img_path in zip(usable_images["image_name"],
+    #                              usable_images["image_path"]):
+    for img_name in usable_images:
+        img_path = "Data/images/" + img_name
+
+        # Skip already processed images
+        if img_name in image_names:
+            pass
+        # Proceed with unprocessed image
+        else:
+            # Load images one by one and compute surface and contents
+            img = io.imread(img_path)
+            surface, outline = surface_and_outline(img)
+            segmented = predictor.predict(img)
+            contents = isolate_contents(segmented, outline, surface)
+
+            # Calculate fullness and add name + fullness to processed lists
+            gut_fullness = np.sum(contents) / np.sum(surface) * 100
+            gut_fullness_percentages.append(gut_fullness)
+            image_names.append(img_name)
+
+            if save_images:
+                concatted_temp = np.concatenate((simple_converter(surface), simple_converter(contents)), 0)
+                concatted = np.concatenate((concatted_temp, img), 0)
+                images_bin.append(concatted.astype(np.uint8))
+                image_names_bin.append(img_name)
+                fullness_bin.append(gut_fullness)
+
+            # Save progress every 25 images
+            if c % 25 == 0:
+                simple_saver(run_name, image_names, gut_fullness_percentages)
+                # Save cell surface, contents and original image if desired
+                if save_images:
+                    for b_img, b_name, b_fullness in zip(images_bin, image_names_bin, fullness_bin):
+                        skimage.io.imsave(f"D:/gut_fullness_output_images/{b_fullness}___{b_name}", b_img)
+                    images_bin, image_names_bin, fullness_bin = [], [], []
+                print(f"{c}/{len(usable_images)} images assessed.")
+                #print(f"{c}/{len(usable_images['image_name'])} images assessed.")
+        c += 1
+
+
+    """
     for img_name in usable_images:
         usable_images_list.append(img_name)
         # Load images one by one and calculate surface and contents
@@ -514,12 +636,17 @@ def main():
         segmented = predictor.predict(img)
         contents = isolate_contents(segmented, outline, surface)
 
+        #concat1 = np.concatenate((img, surface), 0)
+
+        #skimage.io.imsave(f"Data/failure_checks/{img_name}", surface)
+
         # Calculate gut fullness using the surface and cell contents
         gut_fullness = np.sum(contents) / np.sum(surface) * 100
         gut_fullness_percentages.append(gut_fullness)
+    """
 
     # Export the gut fullness percentages of the images as a dataframe
-    export_gut_fullness_percentages(gut_fullness_percentages, usable_images_list)
+    export_gut_fullness_percentages(gut_fullness_percentages, image_names)
 
 
 if __name__ == '__main__':
