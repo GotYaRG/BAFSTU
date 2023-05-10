@@ -11,6 +11,23 @@ from functools import partial
 import os
 import pickle
 
+"""
+Ik heb eens door je script gekeken. Ziet er heel netjes uit, bijna alle functies hebben docstrings en volgens mij heb je een logische opbouw
+gemaakt van alle functies die je hebt geschreven. Ik heb er nu naar gekeken alsof ik de code zou willen downloaden als nieuwe gebruiker.
+Op basis daarvan een paar punten nog:
+- plankton_cnn roept nu nog functies aan die hier niet staan. Daar hebben we het ooit over gehad, ik weet niet precies wat we toen
+afgesproken hadden. Voor nu geen probleem. Het lijkt me wel handig om op termijn wel ook het getrainde model ergens te delen, want
+die roep je nu aan.
+- de locaties van je data staan nu nog hard gecodeerd in een aantal functies, vervang dat op termijn voor iets modulairs
+- bij sommige functies mis ik nog docstring, en het is een goede gewoonte (zelf 'verplicht' volgens de Python-voorschriften) om je
+functies altijd te beginnen met een werkwoord (bij de meeste doe je dat goed)
+- daarnaast is het handig om bovenaan het script (op deze plek) kort samen te vatten waar je script voor dient, en hoe iemand het
+kan gebruiken (welke functie roep je aan, waar specificieer je eventuele input)
+
+Daarnaast heb ik op een paar plekken nog wat tips neergezet die je code beknopter en beter leesbaar maken (zoek op PH: en dan
+vind je ze). Is geen kritiek, maar tips voor volgende keren
+"""
+
 
 def validation_input_to_binary(img):
     """
@@ -481,9 +498,15 @@ def load_usable_images():
     in_file = open("Data/NN_output/predicted_labels_run_2.pickle", "rb")
     new_df = pickle.load(in_file)
     in_file.close()
+    # PH: werkt new_df = pd.read_pickle("Data/NN_output/predicted_labels_run_2.pickle") niet?
+    # digesting_df = new_df.loc[new_df['label'] == 'digesting', 'image_name'].copy()
+    # PH: met bovenstaande regel doe je dit in regel. Let bij Pandas altijd op, als je een subset van een dataframe neemt
+    # en niet expliciet om een copy vraagt, kun je een view krijgen en dat kan onverwachte errors geven als je later in die view
+    # regels gaat aanpassen. Zie: https://towardsdatascience.com/explaining-the-settingwithcopywarning-in-pandas-ebc19d799d25
     is_digesting = new_df["label"] == "digesting"
     digesting_df = new_df[is_digesting]
     return digesting_df["image_name"]
+  
 
 
 def export_gut_fullness_percentages(gut_fullness_percentages, usable_images):
@@ -525,6 +548,7 @@ def load_northsea_images():
 
 
 def simple_converter(img):
+    # PH: volgens mij zou je dit ook kunnen doen met np.stack in 1 of 2 regels
     img = img.astype(int)
     new_array = []
     for y in img:
