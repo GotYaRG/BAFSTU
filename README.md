@@ -1,4 +1,4 @@
-### Gut-Understanding Tool System (GUTS)
+### Gut Unraveling Tool System (GUTS)
 #### A Gut Fullness Assessment Tool for Noctiluca Scintillans
 
 GUTS is a Python based tool that is being developed in order to asses the Gut Fullness of Noctiluca scintillans individuals through image analysis.
