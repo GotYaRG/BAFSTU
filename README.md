@@ -7,28 +7,52 @@ Noctiluca scintillans is a cosmopolitan Dinoflagellate zooplankton species with 
 
 ### Installation
 
-In order to use GUTS, the entire filestructure needs to be downloaded from this github page. Once downloaded, it can be moved to a folder of your choosing on your PC. The folder in which you want to use the tool needs to have the following file structure:
+In order to use GUTS, the entire filestructure needs to be downloaded from this github page. Once downloaded, it can be moved to a folder of your choosing on your PC.
 
 ```
-Tool folder/
-  data/
-    input/
-      image_library
-      ...
-    output/
-      pre-classification
-      output/gut_fullness
-  GUTS_pre_classifier/
-    GUTS_pre_classifier.py
+GUTS/
+  Data/
+    Exports/
+      contents_output/
+      surface_output/
+      classifier_output/
+      gut_fullness_output/
+    Imports/
+      images/
+        sample_pack/
+          sample_images.png
+        trained_segmentation_images/
+          ground_truth/
+            ground_truth_images.png
+          noctiluca_sample/
+            noctiluca_samples.png
+  db_utils/
+    set_paths.py
+  ml_data/
+    checkpoints/
+      model_checkpoints
+    keras_tuner/
+    saved_models/
+      saved_models
+    tb_logs/
+  plankton_cnn/
+    pvnp_build.py
+    pvnp_models.py
+    pvnp_train.py
+    pvnp_visualize.py
+    visualization.py
+    pvnp_import.py
+    pvnp_save_and_load_utils.py
+    pvnp_use.py
+    run_classification_model.py
+  Gut_fullness_algorithm.py
   GUTS.py
 ```
 
 ### Usage
 
-In order to use the tool, simply move all images of Noctiluca scintillans you want to analyze into the "image_library" folder.
-After the images have been moved to the image library, the pre-classification step can be ran. Make sure to enter a memorable name in the prompt when starting the run.
-Once the pre-classification has taken place, the gut fullness assessment can start, for which you need to supply the script with the filename you entered in the last script.
-When the gut fullness of every applicable individual has been assessed, the gut fullness for each image can be found in a .csv file in the output folder.
+In order to use the tool, simply move all images of Noctiluca scintillans you want to analyze into a new folder in the the "Data/Imports/" folder.
+After the images have been moved to the imports folder, GUTS can be used. In order to apply guts to the images in the Imports folder, use the name of the new folder as the "run name".
 
 ### Credits
 All the credits in the world go to Pieter Hovenkamp for developing the classifier used in the pre-classification aspect of the tool and helping me train the classification model.
