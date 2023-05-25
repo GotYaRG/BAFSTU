@@ -1,0 +1,8 @@
+0: digesting 
+1: eating 
+2: gameto_genesis 
+3: multiple 
+4: multiple_nuclei 
+5: not_noctiluca 
+6: out_of_focus_or_frame 
+7: partial_empty 
