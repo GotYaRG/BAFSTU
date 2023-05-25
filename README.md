@@ -7,7 +7,7 @@ Noctiluca scintillans is a cosmopolitan Dinoflagellate zooplankton species with 
 
 ### Installation
 
-In order to use GUTS, the entire filestructure needs to be downloaded from this github page. Once downloaded, it can be moved to a folder of your choosing on your PC.
+In order to use GUTS, the entire filestructure needs to be downloaded from this github page. Once downloaded, it can be moved to a folder of your choosing on your PC. To make sure GUTS will run correctly, the filestructure should be the same as the structure shown below:
 
 ```
 GUTS/
