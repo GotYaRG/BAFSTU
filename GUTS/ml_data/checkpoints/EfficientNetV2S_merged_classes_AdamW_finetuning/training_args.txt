@@ -1,0 +1,25 @@
+model_name: EfficientNetV2S 
+train_prefix_new: merged_classes_AdamW_finetuning 
+train_prefix_prev: merged_classesAdamW 
+classifier_activation: softmax 
+use_imagenet_weights: True 
+optimizer: <tensorflow_addons.optimizers.weight_decay_optimizers.AdamW object at 0x7fcf766e5160> 
+loss: <keras.losses.SparseCategoricalCrossentropy object at 0x7fcf766e5250> 
+directory: merged_classes_train 
+batch_size: 4 
+seed: 1234 
+augment: None 
+validation_split: 0.18 
+as_grayscale: False 
+image_size: 384 
+learning_rate: 0.0001 
+weight_decay: 1e-09 
+t_elapsed_sec: 1042.6249985694885 
+epochs: 75 
+nr_rounds: 1 
+finetuning: True 
+perf_monitor: val_accuracy 
+es_min_delta: 0 
+es_patience: 25 
+es_verbose: 1 
+fit_verbose: 2 
